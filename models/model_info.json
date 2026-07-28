@@ -1,0 +1,30 @@
+{
+    "best_model": "Random Forest",
+    "accuracy": 1.0,
+    "trained_on": "2026-07-26 23:29:15",
+    "feature_names": [
+        "avg_hold_time_ms",
+        "std_hold_time_ms",
+        "avg_flight_time_ms",
+        "std_flight_time_ms",
+        "typing_speed_kps",
+        "key_press_frequency",
+        "error_rate",
+        "total_keystrokes",
+        "avg_mouse_speed",
+        "std_mouse_speed",
+        "max_mouse_speed",
+        "total_clicks",
+        "left_clicks",
+        "right_clicks",
+        "click_frequency",
+        "total_scrolls",
+        "scroll_up_count",
+        "scroll_down_count",
+        "total_idle_time_s",
+        "avg_idle_time_s",
+        "idle_count",
+        "mouse_x_range",
+        "mouse_y_range"
+    ]
+}

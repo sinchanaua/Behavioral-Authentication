@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behavioral Authentication System</title>
+    <style>
+        /* ─── Reset & Base ─── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        /* ─── Header ─── */
+        header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 18px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #0f3460;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+        }
+
+        .header-left h1 {
+            font-size: 20px;
+            color: #00d4ff;
+            letter-spacing: 1px;
+        }
+
+        .header-left p {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #live-clock {
+            font-size: 14px;
+            color: #00d4ff;
+            background: rgba(0,212,255,0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+
+        .session-badge {
+            font-size: 12px;
+            color: #2ecc71;
+            background: rgba(46,204,113,0.1);
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(46,204,113,0.3);
+        }
+
+        /* ─── Main Layout ─── */
+        .container {
+            padding: 25px 30px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        /* ─── Alert Banner ─── */
+        #alert-banner {
+            display: none;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            animation: pulse 1s infinite;
+            box-shadow: 0 0 30px rgba(231,76,60,0.5);
+        }
+
+        @keyframes pulse {
+            0%   { box-shadow: 0 0 20px rgba(231,76,60,0.5); }
+            50%  { box-shadow: 0 0 40px rgba(231,76,60,0.9); }
+            100% { box-shadow: 0 0 20px rgba(231,76,60,0.5); }
+        }
+
+        /* ─── Status Card (Big) ─── */
+        .status-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid #0f3460;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .status-icon {
+            font-size: 60px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .status-info h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .status-info p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .status-authenticated { color: #2ecc71; }
+        .status-warning       { color: #f39c12; }
+        .status-intruder      { color: #e74c3c; }
+        .status-monitoring    { color: #00d4ff; }
+
+        /* ─── Confidence Bar ─── */
+        .confidence-section {
+            margin-left: auto;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .confidence-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .confidence-value {
+            font-size: 42px;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 10px;
+        }
+
+        .confidence-bar-bg {
+            background: #0f3460;
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.8s ease, background 0.5s ease;
+            background: linear-gradient(90deg, #00d4ff, #2ecc71);
+        }
+
+        /* ─── Stats Grid ─── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.15);
+        }
+
+        .stat-icon  { font-size: 28px; margin-bottom: 10px; }
+        .stat-label { font-size: 12px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-size: 26px; font-weight: bold; color: #00d4ff; }
+        .stat-unit  { font-size: 12px; color: #666; margin-top: 3px; }
+
+        /* ─── Bottom Grid ─── */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        /* ─── Session Info Card ─── */
+        .info-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-card h3 {
+            font-size: 14px;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+        .info-key   { color: #888; }
+        .info-value { color: #e0e0e0; font-weight: 500; }
+
+        /* ─── Auth History Table ─── */
+        .history-card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #0f3460;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .history-card h3 {
+            font-size: 14px;
+            color: #00d4ff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #0f3460;
+            padding-bottom: 10px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .history-table th {
+            text-align: left;
+            padding: 8px 10px;
+            color: #888;
+            font-weight: normal;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .history-table td {
+            padding: 10px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .history-table tr:hover td {
+            background: rgba(0,212,255,0.05);
+        }
+
+        .badge {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-ok      { background: rgba(46,204,113,0.2);  color: #2ecc71; }
+        .badge-warn    { background: rgba(243,156,18,0.2);  color: #f39c12; }
+        .badge-alert   { background: rgba(231,76,60,0.2);   color: #e74c3c; }
+        .badge-monitor { background: rgba(0,212,255,0.2);   color: #00d4ff; }
+
+        /* ─── Footer ─── */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #444;
+            font-size: 12px;
+            border-top: 1px solid #1a1a2e;
+        }
+
+        /* ─── Logout Overlay ─── */
+        #logout-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logout-box {
+            background: #16213e;
+            border: 2px solid #e74c3c;
+            border-radius: 15px;
+            padding: 50px;
+            text-align: center;
+            max-width: 480px;
+            animation: zoomIn 0.4s ease;
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(0.7); opacity: 0; }
+            to   { transform: scale(1);  opacity: 1; }
+        }
+
+        .logout-box .big-icon { font-size: 72px; margin-bottom: 20px; }
+        .logout-box h2 { color: #e74c3c; font-size: 24px; margin-bottom: 15px; }
+        .logout-box p  { color: #aaa; line-height: 1.7; margin-bottom: 25px; }
+
+        .logout-btn {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 12px 35px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover { background: #c0392b; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .bottom-grid  { grid-template-columns: 1fr; }
+            .status-card  { flex-direction: column; text-align: center; }
+            .confidence-section { margin-left: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════════ -->
+<header>
+    <div class="header-left">
+        <h1>🔐 Behavioral Authentication System</h1>
+        <p>Continuous Identity Verification — Beyond Login</p>
+    </div>
+    <div class="header-right">
+        <span id="live-clock">--:--:--</span>
+        <span class="session-badge">🟢 Session Active</span>
+    </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════ -->
+<div class="container">
+
+    <!-- Alert Banner (shown when intruder detected) -->
+    <div id="alert-banner">
+        🚨 SECURITY ALERT — Unauthorized User Detected! Session will be terminated.
+    </div>
+
+    <!-- ─── Status Card ─── -->
+    <div class="status-card">
+        <div class="status-icon" id="status-icon">🔄</div>
+        <div class="status-info">
+            <h2 id="status-text" class="status-monitoring">Initializing...</h2>
+            <p id="status-sub">Loading behavioral authentication engine...</p>
+            <p style="margin-top:8px; font-size:13px; color:#555;">
+                Last checked: <span id="last-checked" style="color:#888;">Never</span>
+                &nbsp;|&nbsp;
+                Model: <span id="model-name" style="color:#888;">Loading...</span>
+            </p>
+        </div>
+        <div class="confidence-section">
+            <div class="confidence-label">CONFIDENCE SCORE</div>
+            <div class="confidence-value" id="confidence-value">--%</div>
+            <div class="confidence-bar-bg">
+                <div class="confidence-bar-fill" id="confidence-bar" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Stats Grid ─── -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">⌨️</div>
+            <div class="stat-label">Typing Speed</div>
+            <div class="stat-value" id="typing-speed">--</div>
+            <div class="stat-unit">keys / second</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">⏱️</div>
+            <div class="stat-label">Avg Hold Time</div>
+            <div class="stat-value" id="hold-time">--</div>
+            <div class="stat-unit">milliseconds</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">✈️</div>
+            <div class="stat-label">Avg Flight Time</div>
+            <div class="stat-value" id="flight-time">--</div>
+            <div class="stat-unit">milliseconds</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🖱️</div>
+            <div class="stat-label">Mouse Speed</div>
+            <div class="stat-value" id="mouse-speed">--</div>
+            <div class="stat-unit">pixels / second</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🖱️</div>
+            <div class="stat-label">Total Clicks</div>
+            <div class="stat-value" id="total-clicks">--</div>
+            <div class="stat-unit">in this window</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">💤</div>
+            <div class="stat-label">Idle Time</div>
+            <div class="stat-value" id="idle-time">--</div>
+            <div class="stat-unit">seconds</div>
+        </div>
+    </div>
+
+    <!-- ─── Bottom Grid ─── -->
+    <div class="bottom-grid">
+
+        <!-- Session Info -->
+        <div class="info-card">
+            <h3>📊 Session Statistics</h3>
+            <div class="info-row">
+                <span class="info-key">Session Started</span>
+                <span class="info-value" id="session-start">--</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Total Auth Checks</span>
+                <span class="info-value" id="total-checks">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Authorized Count</span>
+                <span class="info-value" style="color:#2ecc71;" id="auth-count">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Intruder Count</span>
+                <span class="info-value" style="color:#e74c3c;" id="intruder-count">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Alert Count</span>
+                <span class="info-value" style="color:#f39c12;" id="alert-count">0</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Active Model</span>
+                <span class="info-value" id="active-model">--</span>
+            </div>
+        </div>
+
+        <!-- Auth History Table -->
+        <div class="history-card">
+            <h3>📋 Authentication History</h3>
+            <div style="overflow-x:auto; max-height: 250px; overflow-y:auto;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Confidence</th>
+                            <th>Speed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-body">
+                        <tr>
+                            <td colspan="4" style="text-align:center; color:#555; padding:20px;">
+                                Waiting for authentication data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     LOGOUT OVERLAY (shown when intruder detected)
+═══════════════════════════════════════════════════ -->
+<div id="logout-overlay">
+    <div class="logout-box">
+        <div class="big-icon">🔒</div>
+        <h2>Session Terminated!</h2>
+        <p>
+            An <strong style="color:#e74c3c;">unauthorized user</strong> was detected
+            by the Behavioral Authentication System.<br><br>
+            Your session has been terminated for security.
+            The system owner has been <strong>notified via email</strong>.
+        </p>
+        <button class="logout-btn" onclick="window.location.href='/logout'">
+            🔒 Confirm Logout
+        </button>
+    </div>
+</div>
+
+<!-- ─── Footer ─── -->
+<footer>
+    Behavioral Authentication System &nbsp;|&nbsp;
+    Continuous Identity Verification Beyond Login &nbsp;|&nbsp;
+    Final Year Project 2026
+</footer>
+
+<!-- ═══════════════════════════════════════════════════
+     JAVASCRIPT — Live Updates Every 3 Seconds
+═══════════════════════════════════════════════════ -->
+<script>
+    // ─── Live Clock ───
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('live-clock').textContent =
+            now.toLocaleTimeString('en-IN', { hour12: false });
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ─── Get badge class from status string ───
+    function getBadgeClass(status) {
+        if (!status) return 'badge-monitor';
+        const s = status.toLowerCase();
+        if (s.includes('authenticated') && !s.includes('low')) return 'badge-ok';
+        if (s.includes('low') || s.includes('monitoring'))      return 'badge-warn';
+        if (s.includes('intruder') || s.includes('alert'))      return 'badge-alert';
+        return 'badge-monitor';
+    }
+
+    // ─── Update Status Card ───
+    function updateStatus(data) {
+        const statusEl    = document.getElementById('status-text');
+        const statusSub   = document.getElementById('status-sub');
+        const statusIcon  = document.getElementById('status-icon');
+        const confValue   = document.getElementById('confidence-value');
+        const confBar     = document.getElementById('confidence-bar');
+        const alertBanner = document.getElementById('alert-banner');
+
+        const status     = data.status     || 'Initializing';
+        const confidence = data.confidence || 0;
+        const pct        = Math.round(confidence * 100);
+
+        // Update confidence display
+        confValue.textContent = pct + '%';
+        confBar.style.width   = pct + '%';
+
+        // Set color based on confidence
+        if (pct >= 80) {
+            confBar.style.background = 'linear-gradient(90deg, #00d4ff, #2ecc71)';
+            confValue.style.color    = '#2ecc71';
+        } else if (pct >= 60) {
+            confBar.style.background = 'linear-gradient(90deg, #f39c12, #e67e22)';
+            confValue.style.color    = '#f39c12';
+        } else {
+            confBar.style.background = 'linear-gradient(90deg, #e74c3c, #c0392b)';
+            confValue.style.color    = '#e74c3c';
+        }
+
+        // Update status text and icon
+        const s = status.toLowerCase();
+        if (s.includes('authenticated') && !s.includes('low')) {
+            statusEl.textContent  = status;
+            statusEl.className    = 'status-authenticated';
+            statusIcon.textContent= '✅';
+            statusSub.textContent = 'Behavioral profile matches. You are verified.';
+            alertBanner.style.display = 'none';
+        } else if (s.includes('intruder') || s.includes('alert')) {
+            statusEl.textContent  = status;
+            statusEl.className    = 'status-intruder';
+            statusIcon.textContent= '🚨';
+            statusSub.textContent = 'WARNING: Behavioral pattern does not match the authorized user!';
+            alertBanner.style.display = 'block';
+        } else if (s.includes('low') || s.includes('monitoring')) {
+            statusEl.textContent  = status;
+            statusEl.className    = 'status-warning';
+            statusIcon.textContent= '⚠️';
+            statusSub.textContent = 'Unusual behavior detected. Monitoring closely...';
+            alertBanner.style.display = 'none';
+        } else {
+            statusEl.textContent  = status;
+            statusEl.className    = 'status-monitoring';
+            statusIcon.textContent= '🔄';
+            statusSub.textContent = 'Collecting behavioral data for analysis...';
+            alertBanner.style.display = 'none';
+        }
+
+        // Force logout overlay
+        if (data.force_logout) {
+            document.getElementById('logout-overlay').style.display = 'flex';
+        }
+    }
+
+    // ─── Update Stats Cards ───
+    function updateStats(data) {
+        document.getElementById('typing-speed').textContent  = data.typing_speed    || '--';
+        document.getElementById('hold-time').textContent     = data.avg_hold_time   || '--';
+        document.getElementById('flight-time').textContent   = data.avg_flight_time || '--';
+        document.getElementById('mouse-speed').textContent   = data.mouse_speed     || '--';
+        document.getElementById('total-clicks').textContent  = data.total_clicks    || '--';
+        document.getElementById('idle-time').textContent     = data.idle_time       || '--';
+        document.getElementById('last-checked').textContent  = data.last_checked    || 'Never';
+        document.getElementById('model-name').textContent    = data.model_name      || '--';
+        document.getElementById('session-start').textContent = data.session_start   || '--';
+        document.getElementById('total-checks').textContent  = data.total_checks    || 0;
+        document.getElementById('auth-count').textContent    = data.authorized_count|| 0;
+        document.getElementById('intruder-count').textContent= data.intruder_count  || 0;
+        document.getElementById('alert-count').textContent   = data.alert_count     || 0;
+        document.getElementById('active-model').textContent  = data.model_name      || '--';
+    }
+
+    // ─── Update History Table ───
+    function updateHistory(logs) {
+        const tbody = document.getElementById('history-body');
+        if (!logs || logs.length === 0) return;
+
+        tbody.innerHTML = '';
+        logs.forEach(row => {
+            const badgeClass = getBadgeClass(row.status);
+            const time = row.timestamp
+                ? row.timestamp.split(' ')[1] || row.timestamp
+                : '--';
+            const conf = row.confidence
+                ? Math.round(row.confidence * 100) + '%'
+                : '--';
+            const speed = row.typing_speed
+                ? parseFloat(row.typing_speed).toFixed(2)
+                : '--';
+
+            tbody.innerHTML += `
+                <tr>
+                    <td style="color:#888; font-size:12px;">${time}</td>
+                    <td><span class="badge ${badgeClass}">${row.status || '--'}</span></td>
+                    <td style="color:#00d4ff;">${conf}</td>
+                    <td style="color:#888;">${speed} kps</td>
+                </tr>
+            `;
+        });
+    }
+
+    // ─── Fetch Live Status ───
+    async function fetchStatus() {
+        try {
+            const res  = await fetch('/api/status');
+            const data = await res.json();
+            updateStatus(data);
+            updateStats(data);
+        } catch (e) {
+            console.log('Status fetch error:', e);
+        }
+    }
+
+    // ─── Fetch Auth History ───
+    async function fetchHistory() {
+        try {
+            const res  = await fetch('/api/log');
+            const logs = await res.json();
+            updateHistory(logs);
+        } catch (e) {
+            console.log('History fetch error:', e);
+        }
+    }
+
+    // ─── Run on Load & Every 3 Seconds ───
+    fetchStatus();
+    fetchHistory();
+    setInterval(fetchStatus,  3000);   // Update status every 3 seconds
+    setInterval(fetchHistory, 10000);  // Update history every 10 seconds
+</script>
+
+</body>
+</html>
