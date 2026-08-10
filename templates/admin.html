@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login Audit</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        h1 { font-size: 28px; color: #00d4ff; }
+        p { color: #888; margin-top: 8px; }
+        .toolbar {
+            margin-top: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 999px;
+            text-decoration: none;
+            color: white;
+            background: linear-gradient(135deg, #00d4ff, #2ecc71);
+            transition: transform 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid #0f3460;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+        }
+        .card h2 { margin-bottom: 12px; font-size: 22px; color: #fff; }
+        .card p { color: #aaa; margin-bottom: 20px; }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 760px;
+        }
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            font-size: 14px;
+        }
+        th { color: #94d2ff; letter-spacing: 0.02em; font-weight: 600; }
+        td { color: #d0d8e3; }
+        tr:hover td { background: rgba(0,212,255,0.05); }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .badge-success { background: rgba(46,204,113,0.18); color: #2ecc71; }
+        .badge-failed  { background: rgba(231,76,60,0.18); color: #e74c3c; }
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #777;
+        }
+        footer { text-align: center; margin-top: 32px; color: #444; font-size: 12px; }
+        @media (max-width: 760px) {
+            th, td { padding: 12px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <header>
+            <div>
+                <h1>Admin / Login Audit</h1>
+                <p>Review the latest login attempts for your Behavioral Authentication app.</p>
+            </div>
+            <div class="toolbar">
+                <a class="btn" href="/">Back to Dashboard</a>
+                <a class="btn" href="/logout">Log out</a>
+            </div>
+        </header>
+
+        <div class="card">
+            <h2>Recent Login Attempts</h2>
+            <p>The table below shows the last 50 attempted logins, including success state and source IP.</p>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Username</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if history and history|length > 0 %}
+                            {% for row in history %}
+                                <tr>
+                                    <td>{{ row.timestamp }}</td>
+                                    <td>{{ row.username or 'Unknown' }}</td>
+                                    <td>
+                                        <span class="badge {{ 'badge-success' if row.status == 'Success' else 'badge-failed' }}">
+                                            {{ row.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ row.message or '-' }}</td>
+                                    <td>{{ row.ip_address or '-' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    No login attempts have been recorded yet.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer>
+            Behavioral Authentication System — Admin Audit Page
+        </footer>
+    </div>
+</body>
+</html>

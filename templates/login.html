@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Behavioral Authentication</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f0f1a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+        }
+
+        /* ─── Animated background dots ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(0,212,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(46,204,113,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(155,89,182,0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* ─── Logo / Header ─── */
+        .brand {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeDown 0.6s ease;
+        }
+
+        .brand-icon { font-size: 48px; margin-bottom: 10px; }
+
+        .brand h1 {
+            font-size: 22px;
+            color: #00d4ff;
+            letter-spacing: 1px;
+        }
+
+        .brand p {
+            font-size: 13px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        /* ─── Card ─── */
+        .card {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid #0f3460;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: fadeUp 0.6s ease;
+        }
+
+        .card h2 {
+            font-size: 22px;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 28px;
+        }
+
+        /* ─── Form Fields ─── */
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field input {
+            width: 100%;
+            padding: 13px 16px;
+            background: #0f0f1a;
+            border: 1px solid #0f3460;
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.3s, box-shadow 0.3s;
+        }
+
+        .field input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 0 3px rgba(0,212,255,0.1);
+        }
+
+        .field input::placeholder { color: #444; }
+
+        /* ─── Button ─── */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,212,255,0.3);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        /* ─── Alert Messages ─── */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-error {
+            background: rgba(231,76,60,0.15);
+            border: 1px solid rgba(231,76,60,0.4);
+            color: #e74c3c;
+        }
+
+        .alert-success {
+            background: rgba(46,204,113,0.15);
+            border: 1px solid rgba(46,204,113,0.4);
+            color: #2ecc71;
+        }
+
+        /* ─── Divider ─── */
+        .divider {
+            text-align: center;
+            margin: 22px 0;
+            position: relative;
+            color: #444;
+            font-size: 13px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 42%;
+            height: 1px;
+            background: #1a1a2e;
+        }
+
+        .divider::before { left: 0; }
+        .divider::after  { right: 0; }
+
+        /* ─── Register Link ─── */
+        .register-link {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .register-link a {
+            color: #00d4ff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover { text-decoration: underline; }
+
+        /* ─── Security Badge ─── */
+        .security-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 25px;
+            font-size: 12px;
+            color: #444;
+        }
+
+        /* ─── Animations ─── */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Brand -->
+    <div class="brand">
+        <div class="brand-icon">🔐</div>
+        <h1>Behavioral Authentication</h1>
+        <p>Continuous Identity Verification — Beyond Login</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="card">
+        <h2>Welcome Back 👋</h2>
+        <p>Sign in to start your authenticated session</p>
+
+        <!-- Error / Success Messages -->
+        <div class="alert alert-error" id="error-msg">
+            ❌ <span id="error-text">Invalid credentials</span>
+        </div>
+        <div class="alert alert-success" id="success-msg">
+            ✅ Login successful! Redirecting...
+        </div>
+
+        <!-- Login Form -->
+        <form method="POST" action="/login" id="login-form">
+
+            <div class="field">
+                <label>Username</label>
+                <input
+                    type="text"
+                    name="username"
+                    placeholder="Enter your username"
+                    required
+                    autocomplete="off"
+                />
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                />
+            </div>
+
+            <button type="submit" class="btn">
+                🔓 Sign In
+            </button>
+
+        </form>
+
+        <!-- Flash messages from Flask -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <script>
+                    {% for category, message in messages %}
+                        {% if category == 'error' %}
+                            document.getElementById('error-text').textContent = "{{ message }}";
+                            document.getElementById('error-msg').style.display = 'block';
+                        {% elif category == 'success' %}
+                            document.getElementById('success-msg').style.display = 'block';
+                        {% endif %}
+                    {% endfor %}
+                </script>
+            {% endif %}
+        {% endwith %}
+
+        <div class="divider">or</div>
+
+        <div class="register-link">
+            Don't have an account?
+            <a href="/register">Create one here →</a>
+        </div>
+
+    </div>
+
+    <!-- Security Badge -->
+    <div class="security-badge">
+        🛡️ Protected by Behavioral Biometric Authentication
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Session Terminated</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f0f1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+        .box {
+            text-align: center;
+            background: #16213e;
+            padding: 50px 40px;
+            border-radius: 15px;
+            border: 2px solid #e74c3c;
+            max-width: 480px;
+            box-shadow: 0 0 40px rgba(231,76,60,0.3);
+            animation: zoomIn 0.4s ease;
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to   { transform: scale(1);   opacity: 1; }
+        }
+        .icon  { font-size: 72px; margin-bottom: 20px; }
+        h1     { color: #e74c3c; font-size: 26px; margin-bottom: 15px; }
+        p      { color: #aaa; line-height: 1.8; margin-bottom: 30px; font-size: 15px; }
+        .btn {
+            display: inline-block;
+            background: #e74c3c;
+            color: white;
+            padding: 13px 35px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 15px;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: #c0392b; }
+        .timestamp { color: #555; font-size: 12px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="icon">🔒</div>
+        <h1>Session Terminated!</h1>
+        <p>
+            An <strong style="color:#e74c3c;">unauthorized user</strong>
+            was detected by the Behavioral Authentication System.<br><br>
+            Your session has been terminated for security.
+            The system owner has been <strong>notified via email</strong>.
+        </p>
+        <a href="/login" class="btn">🔐 Back to Login</a>
+        <div class="timestamp" id="ts"></div>
+    </div>
+    <script>
+        document.getElementById('ts').textContent =
+            'Terminated at: ' + new Date().toLocaleString();
+    </script>
+</body>
+</html>

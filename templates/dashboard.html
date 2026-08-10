@@ -462,6 +462,10 @@
                 <span class="info-key">Active Model</span>
                 <span class="info-value" id="active-model">--</span>
             </div>
+            <div class="info-row">
+                <span class="info-key">Logged In As</span>
+                <span class="info-value" id="logged-user">{{ username }}</span>
+            </div>
         </div>
 
         <!-- Auth History Table -->
@@ -487,6 +491,12 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <div style="text-align:right; margin-top: 20px;">
+        <a href="/admin" style="color:#00d4ff; text-decoration:none; font-size:14px;">
+            👁️ View login audit / admin page
+        </a>
     </div>
 
 </div>
@@ -597,12 +607,16 @@
             alertBanner.style.display = 'none';
         }
 
-        // Force logout overlay
-        if (data.force_logout) {
+        // Force logout — redirect immediately
+        if (data.force_logout || status.toLowerCase().includes('unauth') || status.toLowerCase().includes('intruder')) {
             document.getElementById('logout-overlay').style.display = 'flex';
+            // Auto redirect after 3 seconds
+            setTimeout(function() {
+                window.location.href = '/force-logout';
+            }, 3000);
         }
-    }
 
+    }
     // ─── Update Stats Cards ───
     function updateStats(data) {
         document.getElementById('typing-speed').textContent  = data.typing_speed    || '--';

@@ -44,9 +44,9 @@ MODEL_PATH       = "models/best_model.pkl"
 SCALER_PATH      = "models/scaler.pkl"
 MODEL_INFO_PATH  = "models/model_info.json"
 AUTH_LOG_PATH    = "data/auth_log.csv"
-CHECK_INTERVAL   = 10        # Seconds between each authentication check
-ALERT_THRESHOLD  = 2         # Consecutive failures before alert
-CONFIDENCE_MIN   = 0.8       # Below this = suspicious
+CHECK_INTERVAL   = 5        # Seconds between each authentication check
+ALERT_THRESHOLD  = 1        # Consecutive failures before alert
+CONFIDENCE_MIN   = 0.9       # Below this = suspicious
 
 
 # -------------------------------------------------------

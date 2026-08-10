@@ -1,5 +1,5 @@
-avg_hold_time_ms,std_hold_time_ms,avg_flight_time_ms,std_flight_time_ms,typing_speed_kps,key_press_frequency,error_rate,total_keystrokes
-114.1552,63.2096,1047.1928,1924.2687,1.0531,1.0488,0.0444,45
+avg_hold_time_md_time_ms,avg_flight_time_ms,std_flight_time_ms,typing_speed_kps,key_press_frequency,error_rate,total_keystrokes
+114.1552,63.2096,1047.1928,1924.2687,1.0531,1.0488,0.0444,45s,std_hol
 117.0483,52.3035,413.5115,843.2246,1.9702,1.9676,0.051,294
 121.296,65.2893,485.6501,798.5528,1.7653,1.7596,0.0256,117
 122.877,61.5148,796.6533,2407.3439,1.1774,1.1756,0.0325,123
